@@ -6,11 +6,12 @@ from rest_framework import status
 from .serializers import CourseSerializer, CourseCommentSerializer
 
 
-# Create your views here.
+# Courses
 @api_view(["GET"])
 def get_courses(request):
     courses = Course.objects.all()
     serializer = CourseSerializer(courses, many=True)
+    print("Authenticated User:", request.user)
     return Response(serializer.data)
 
 
@@ -41,6 +42,7 @@ def create_course(request):
         return Response(serializer.data)
 
 
+# Comments
 @api_view(["GET"])
 def get_comments(request, id):
     try:

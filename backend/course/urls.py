@@ -9,4 +9,5 @@ urlpatterns = [
     path("comments/<int:id>/", views.get_comments),
     path("comments/<int:id1>/<int:id2>", views.get_comment),
     path("create-comment/", views.create_comment),
+    # path("purchases/", views.get_purchases),
 ]
