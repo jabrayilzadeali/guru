@@ -1,14 +1,22 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 # Create your views here.
-from .serializers import UserSerializer
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
+from .serializers import UserSerializer
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 User = get_user_model()
+
+
+class CreateUserView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
 
 
 @api_view(["GET"])
@@ -25,3 +33,9 @@ def signup(request):
         serializer.save()
         return Response({"user": serializer.data})
     return Response({"user": "can't create user"})
+
+
+@api_view(["GET"])
+def login(request):
+    user = get_object_or_404(User, email=request.data["email"])
+    serializer = UserSerializer(data=request.data)

@@ -13,5 +13,7 @@ find . -not -path "./.venv/*" -path "*/migrations/*.py" -not -name "__init__.py"
 find . -not -path "./.venv/*" -path "*/migrations/*.pyc" -delete
 
 # Run migrations
-# python manage.py makemigrations
-# python manage.py migrate
+python manage.py makemigrations
+python manage.py migrate
+
+python manage.py createsuperuser
