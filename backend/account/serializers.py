@@ -4,6 +4,21 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = [
+            "password",
+            "groups",
+            "user_permissions",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "is_instructor",
+        ]
+        # fields = "__all__"
+
+
 class UserSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True)
 

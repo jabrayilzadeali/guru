@@ -12,50 +12,72 @@ from .serializers import (
 
 
 # Courses
-class CourseListView(generics.ListAPIView):
+class CourseListAPIView(generics.ListAPIView):
     serializer_class = CourseSerializer
     permission_classes = [AllowAny]
+    queryset = Course.objects.all()
+
+
+class CourseDetailAPIView(generics.RetrieveAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    lookup_field = "pk"
+
+
+class CourseListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Course.objects.all()
+        return Course.objects.filter(instructors=self.request.user)
 
-
-# @api_view(["GET"])
-# def get_courses(request):
-#     courses = Course.objects.all()
-#     serializer = CourseSerializer(courses, many=True)
-#     print("Authenticated User:", request.user)
-#     return Response(serializer.data)
-
-
-@api_view(["GET", "PUT", "DELETE"])
-def get_course(request, id):
-    try:
-        course = Course.objects.get(id=id)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    if request.method == "GET":
-        serializer = CourseSerializer(course)
-        return Response(serializer.data)
-    if request.method == "PUT":
-        serializer = CourseSerializer(course, data=request.data)
+    def perform_create(self, serializer):
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-    if request.method == "DELETE":
-        course.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            serializer.save(instructors=[self.request.user])
+            # serializer.save()
+        else:
+            print(serializer.errors)
 
 
-@api_view(["POST"])
-def create_course(request):
-    serializer = CourseSerializer(data=request.data)
-    if serializer.is_valid():
+class CourseUpdateAPIView(generics.UpdateAPIView):
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return Course.objects.filter(instructors=self.request.user)
+
+    def get_update(self, serializer):
         serializer.save()
-        return Response(serializer.data)
 
 
-# Content
+class CourseDeleteAPIView(generics.DestroyAPIView):
+    serializer_class = CourseSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return Course.objects.filter(instructors=self.request.user)
+
+    def get_destroy(self, instance):
+        super().perform_destroy(instance)
+
+
+class CourseContentListCreateAPIView(generics.ListAPIView):
+    serializer_class = CourseContentSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        return Course.objects.get(pk=pk).coursecontent_set.all()
+
+    # def perform_create(self, serializer):
+    #     if serializer.is_valid():
+    #         serializer.save(instructors=[self.request.user])
+    #         # serializer.save()
+    #     else:
+    #         print(serializer.errors)
 
 
 @api_view(["GET"])

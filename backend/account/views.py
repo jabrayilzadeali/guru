@@ -6,17 +6,24 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UserProfileSerializer
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
 User = get_user_model()
 
 
-class CreateUserView(generics.CreateAPIView):
+class CreateUserAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+
+@api_view(["GET"])
+def profile(request):
+    user = request.user
+    serializer = UserProfileSerializer(user)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])

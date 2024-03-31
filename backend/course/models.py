@@ -59,14 +59,14 @@ class Course(models.Model):
     def __str__(self):
         return f"{self.title} | {self.price}"
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        # After saving the course, update is_instructor for all associated instructors
-        for instructor in self.instructors.all():
-            if not instructor.is_instructor:
-                instructor.is_instructor = True
-                instructor.save()
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)
+    #
+    #     # After saving the course, update is_instructor for all associated instructors
+    #     for instructor in self.instructors.all():
+    #         if not instructor.is_instructor:
+    #             instructor.is_instructor = True
+    #             instructor.save()
 
     # def save(self, *args, **kwargs):
     #     course = super(Course, self).save(*args, **kwargs)
