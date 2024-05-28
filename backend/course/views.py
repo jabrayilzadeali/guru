@@ -6,6 +6,7 @@ from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .serializers import (
     CourseSerializer,
+    CourseModuleSerializer,
     CourseContentSerializer,
     CourseCommentSerializer,
 )
@@ -63,6 +64,15 @@ class CourseDeleteAPIView(generics.DestroyAPIView):
         super().perform_destroy(instance)
 
 
+class CourseModuleListAPIView(generics.ListAPIView):
+    serializer_class = CourseModuleSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        return Course.objects.get(pk=pk).coursemodule_set.all()
+
+
 class CourseContentListCreateAPIView(generics.ListAPIView):
     serializer_class = CourseContentSerializer
     permission_classes = [IsAuthenticated]
@@ -80,20 +90,113 @@ class CourseContentListCreateAPIView(generics.ListAPIView):
     #         print(serializer.errors)
 
 
-@api_view(["GET"])
-def get_content(request, id):
-    try:
-        course = Course.objects.get(id=id)
-        content = course.coursecontent_set.all()
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    serializer = CourseContentSerializer(content, many=True)
-    print("Authenticated User:", request.user)
-    return Response(serializer.data)
-
-
 # Comments
+
+
+class CourseCommentListAPIView(generics.ListAPIView):
+    serializer_class = CourseCommentSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        return Course.objects.get(pk=pk).coursecomment_set.all()
+
+
+class CourseCommentListMineAPIView(generics.ListAPIView):
+    serializer_class = CourseCommentSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        return Course.objects.get(pk=pk).coursecomment_set.filter(
+            user=self.request.user
+        )
+
+
+class CourseCommentCreateAPIView(generics.CreateAPIView):
+    serializer_class = CourseCommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    # def get_queryset(self):
+    #     return Course.objects.get(pk=pk).coursecomment_set.all()
+
+    def perform_create(self, serializer):
+        print("---------------------------------------------------------------")
+        pk = self.kwargs.get("pk")
+        Course.objects.get(pk=pk).coursecomment_set.all()
+        if serializer.is_valid():
+            serializer.save(user=self.request.user, course=Course.objects.get(pk=pk))
+            # serializer.save()
+        else:
+            print(serializer.errors)
+
+
+class CourseCommentDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = CourseCommentSerializer
+    lookup_field = "id"
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        print(Course.objects.get(pk=pk))
+        print(
+            Course.objects.get(pk=pk).coursecomment_set.filter(user=self.request.user)
+        )
+        return Course.objects.get(pk=pk).coursecomment_set.filter(
+            user=self.request.user
+        )
+
+
+class CourseCommentUpdateAPIView(generics.UpdateAPIView):
+    serializer_class = CourseCommentSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        print(
+            Course.objects.get(pk=pk).coursecomment_set.filter(user=self.request.user)
+        )
+        return Course.objects.get(pk=pk).coursecomment_set.filter(
+            user=self.request.user
+        )
+
+    def get_update(self, serializer):
+        serializer.save()
+
+
+class CourseCommentDeleteAPIView(generics.DestroyAPIView):
+    serializer_class = CourseCommentSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+
+    def get_queryset(self):
+        pk = self.kwargs.get("pk")
+        print(
+            Course.objects.get(pk=pk).coursecomment_set.filter(user=self.request.user)
+        )
+        return Course.objects.get(pk=pk).coursecomment_set.filter(
+            user=self.request.user
+        )
+
+    def get_destroy(self, instance):
+        super().perform_destroy(instance)
+
+
+# class CourseListCreateAPIView(generics.ListCreateAPIView):
+#     serializer_class = CourseSerializer
+#     permission_classes = [IsAuthenticated]
+#
+#     def get_queryset(self):
+#         return Course.objects.filter(instructors=self.request.user)
+#
+#     def perform_create(self, serializer):
+#         if serializer.is_valid():
+#             serializer.save(instructors=[self.request.user])
+#             # serializer.save()
+#         else:
+#             print(serializer.errors)
+
+
 @api_view(["GET"])
 def get_comments(request, id):
     try:

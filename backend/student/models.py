@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from course.models import Course, CourseContent
+from decimal import Decimal
 
 # Create your models here.
 User = get_user_model()
@@ -9,9 +10,11 @@ User = get_user_model()
 class Student(models.Model):
     # user = models.ForeignKey(User, on_delete=models.CASCADE, unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    balance = models.DecimalField(max_digits=10, decimal_places=2)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def increase_balance(self, amount):
+        if not isinstance(amount, Decimal):
+            amount = Decimal(amount)
         self.balance += amount
         self.save()
 
@@ -28,7 +31,7 @@ class Cart(models.Model):
         unique_together = ("student", "course")
 
     def __str__(self):
-        return f"{self.student} - {self.course} - Quantity: {self.quantity}"
+        return f"{self.student} - {self.course}"
 
 
 class Purchase(models.Model):

@@ -7,6 +7,8 @@ from django.core.validators import (
 
 from django.contrib.auth import get_user_model
 from ckeditor.fields import RichTextField
+# from django.db.models.signals import pre_save
+# from django.dispatch import receiver
 
 # from student.models import Student
 # from student.models import Purchase
@@ -59,51 +61,32 @@ class Course(models.Model):
     def __str__(self):
         return f"{self.title} | {self.price}"
 
-    # def save(self, *args, **kwargs):
-    #     super().save(*args, **kwargs)
-    #
-    #     # After saving the course, update is_instructor for all associated instructors
-    #     for instructor in self.instructors.all():
-    #         if not instructor.is_instructor:
-    #             instructor.is_instructor = True
-    #             instructor.save()
 
-    # def save(self, *args, **kwargs):
-    #     course = super(Course, self).save(*args, **kwargs)
-    #     print("=------------------------------=")
-    #     print("pk: ", self.pk)
-    #     print("title: ", self.title)
-    #     print("All Instructors: ", self.instructors.all())
-    #     print("")
-    #     for instructor in self.instructors.all():
-    #         if instructor.is_instructor:
-    #             continue
-    #         instructor.is_instructor = True
-    #         instructor.save()
-    #         print(instructor, instructor.is_instructor)
-    #
-    #     print("=------------------------------=")
-
-
-class CourseComment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+class CourseModule(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-
-    rating = models.FloatField(
-        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)]
-    )
-    comment = models.TextField()
+    # order = models.PositiveIntegerField(default=0)
+    title = models.CharField(max_length=256)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"Comment by {self.user.username} on {self.course.title}"
+        return f"{self.title} - {self.course.title}"
+
+    # def save(self, *args, **kwargs):
+    #     if not self.order:
+    #         # Generate order based on the existing modules
+    #         max_order = CourseModule.objects.filter(course=self.course).aggregate(
+    #             max_order=models.Max("order")
+    #         )["max_order"]
+    #         self.order = max_order + 1 if max_order is not None else 1
+    #     super().save(*args, **kwargs)
 
 
 class CourseContent(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    # course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    module = models.ForeignKey(CourseModule, on_delete=models.CASCADE)
 
     title = models.CharField(max_length=256)
 
@@ -125,12 +108,21 @@ class CourseContent(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # def track_progress(self, student):
-    #     try:
-    #         progress = ContentProgress.objects.get(student=student, content=self)
-    #         return progress.progress
-    #     except ContentProgress.DoesNotExist:
-    #         return "not_started"
-
     def __str__(self):
         return f"{self.title}"
+
+
+class CourseComment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+
+    rating = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)]
+    )
+    comment = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.course.title}"
