@@ -13,6 +13,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="refresh"),
     path("courses/", include("course.urls")),
     path("student/", include("student.urls")),
+    path("stats/", include("stats.urls"))
     # path("auth/", include("rest_framework.urls")),
     # path("accounts/", include("account.urls")),
 ]
